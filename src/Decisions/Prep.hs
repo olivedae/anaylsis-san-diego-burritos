@@ -116,14 +116,10 @@ instance FromNamedRecord Burrito where
     <*> r .: "overall"
 
 store
-  :: a
-  -> a
-store = id
--- store
---  :: FilePath
---  -> [Burrito]
---  -> IO ()
--- store filepath set = writeFile filepath $ show set
+ :: FilePath
+ -> [Burrito]
+ -> IO ()
+store filepath set = writeFile filepath $ show set
 
 clean
   :: [Burrito]
