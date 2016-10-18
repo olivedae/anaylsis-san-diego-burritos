@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings, RankNTypes #-}
 
-module Decisions.Prep
+module Decisions.Prepare
 ( Burrito (..)
 , Score (..)
 , Cost (..)

@@ -1,5 +1,5 @@
 module Decisions.Utils
-( DataSet )
+()
 where
 
 import Data.Functor
@@ -7,9 +7,6 @@ import Control.Applicative
 import qualified Data.Foldable as F
 import Data.Monoid
 
-import Decisions.Prep
-
-type DataSet = ([Burrito], Integer, Integer);
 -- type DataSet ([Burrito], AttrField, Attributes)
 -- type DataSet = ([Burrito], Integer, Integer)
 
