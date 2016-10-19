@@ -38,8 +38,8 @@ largestGain
 largestGain set fields = field
   where (_, field) = foldl largest canidate canidates
         (canidate:canidates) = [ (gain set f, f) | f <- fields ]
-        largest current cand
-          | fst cand > fst current = cand
+        largest current@(currentGain,_) cand@(canidateGain,_)
+          | canidateGain > currentGain = cand
           | otherwise = current
 
 gain
@@ -73,7 +73,7 @@ information
   -> Attribute
   -> Class
   -> a
-information p a c = logBase 2 $ (%) p a c
+information p a c = - logBase 2 $ (%) p a c
 
 (*%*)
   :: Floating a
