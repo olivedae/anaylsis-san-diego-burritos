@@ -9,7 +9,7 @@ module Decisions.ID3
 ) where
 
 import Decisions
-imort Control.Applicative
+import Control.Applicative
 
 id3
   :: Dataset
