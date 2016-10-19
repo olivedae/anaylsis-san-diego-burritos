@@ -50,4 +50,5 @@ library
                     , random-fu
                     , bytestring
                     , cassava
+                    , containers
   default-language: Haskell2010

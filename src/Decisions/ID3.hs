@@ -4,7 +4,10 @@ module Decisions.ID3
 , largestGain
 , gain
 , entropy
-, proportion
+, (*%*)
+, (%)
+, add
+, information
 , get
 ) where
 
@@ -13,18 +16,9 @@ import Control.Applicative
 import qualified Data.Map as Map
 
 id3
-  :: Dataset
-  -> DecisionTree
-id3 = id3' Inital
-
-id3'
-  :: DecisionTree
-  -> DataSet
-  -> DecisionTree
-id3' _ _ = Empty
-id3' _ _ = foldl (\tree d' -> tree `join` id3 d') t next
-  where largest = largestGain d a t
-        next    = split largest d
+  :: a
+  -> a
+id3 = id
 
 split
   :: Set
@@ -40,40 +34,38 @@ split set (attribute, classes) = [ s | (_,s) <- split' ]
 largestGain
   :: Set
   -> [Field]
-  -> Attribute
-largestGain set fields = attribute
-  where (_, attribute)       = foldl largest canidate canidates
-        (canidate:canidates) = [ (gain set field, fst field) | field <- fields ]
-        largest (g, ca) (g', ca')
-          | g' > g    = (g', ca')
-          | otherwise = (g, ca)
+  -> Field
+largestGain set fields = field
+  where (_, field) = foldl largest canidate canidates
+        (canidate:canidates) = [ (gain set f, f) | f <- fields ]
+        largest current cand
+          | fst cand > fst current = cand
+          | otherwise = current
 
 gain
   :: Floating a
   => Set
   -> Field
   -> a
-gain set field = reduced
-  where reduced         = uncertainty - uncertainty'
-        uncertainty     = entropy set field
-        uncertainty'    = foldl sum' 0.0 $ split field
-        sum' total set' = total + (proportion set' field) * (entropy set' field)
+gain set field = e - e'
+  where e  = entropy set field
+        e' = add [ (*%*) s field * entropy s field | s <- split set field ]
 
 entropy
   :: Floating a
   => Set
   -> Field
   -> a
-entropy set (attribute, classes) = sum subsets
+entropy set (attribute, classes) = add subsets
   where subsets = [ calculate c | c <- classes ]
         calculate c =
           (%) set attribute c * information set attribute c
 
-sum
+add
   :: (Num a)
   => [a]
   -> a
-sum = foldl (+) 0
+add = foldl (+) 0
 
 information
   :: Floating a
@@ -83,13 +75,21 @@ information
   -> a
 information p a c = logBase 2 $ (%) p a c
 
+(*%*)
+  :: Floating a
+  => Set
+  -> Field
+  -> a
+(*%*) _ (_, []) = 0.0
+(*%*) set (a, (c:cs)) = (%) set a c + (*%*) set (a, cs)
+
 (%)
   :: Floating a
   => Set
   -> Attribute
   -> Class
   -> a
-(%) set attr c = sum counts / (fromIntegral . length) set
+(%) set attr c = add counts / (fromIntegral . length) set
   where counts = map (\p -> if isin p then 1 else 0) set
         isin p = get p attr == c
 
