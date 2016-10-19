@@ -10,6 +10,7 @@ module Decisions.ID3
 
 import Decisions
 import Control.Applicative
+import qualified Data.Map as Map
 
 id3
   :: Dataset
@@ -29,10 +30,11 @@ split
   :: Set
   -> Field
   -> [Set]
-split set (attribute, classes) = Map.foldr parse hash set
-  where parse d p = Map.adjust (p:) (get attribute p) d
-        hash      = convert $ (,) ZipList classes <*> empty
-        convert   = Map.fromList . getZipList
+split set (attribute, classes) = [ s | (_,s) <- split' ]
+  where split'    = Map.toList $ foldr parse dict set
+        parse p d = Map.adjust (p:) (get p attribute) d
+        dict      = convert $ (,) <$> ZipList classes <*> empty
+        convert   = (Map.fromList . getZipList)
         empty     = (ZipList . repeat) []
 
 largestGain
@@ -47,8 +49,8 @@ largestGain set fields = attribute
           | otherwise = (g, ca)
 
 gain
-  :: (Ord a, Floating a)
-  -> Set
+  :: Floating a
+  => Set
   -> Field
   -> a
 gain set field = reduced
@@ -58,31 +60,41 @@ gain set field = reduced
         sum' total set' = total + (proportion set' field) * (entropy set' field)
 
 entropy
-  :: (Ord a, Floating a)
-  -> Set
+  :: Floating a
+  => Set
   -> Field
   -> a
-entropy set (attribute, classes) = -entropy'
-  where entropy'     = foldl (\total c -> total + update c) 0 classes
-        ratio        = proportion set attribute
-        update class = let r = ratio class
-          in r * logBase 2 r
+entropy set (attribute, classes) = sum subsets
+  where subsets = [ calculate c | c <- classes ]
+        calculate c =
+          (%) set attribute c * information set attribute c
 
-proportion
-  :: (Ord a, Floating a)
-  -> Set
-  -> Field
+sum
+  :: (Num a)
+  => [a]
   -> a
-proportion set (attribute, class) = ratio
-  where ratio    = includes / total
-        total    = length set
-        includes = foldl inc 0 set
-        inc count point
-          | get point attribute == class = count + 1
-          | otherwise = count
+sum = foldl (+) 0
+
+information
+  :: Floating a
+  => Set
+  -> Attribute
+  -> Class
+  -> a
+information p a c = logBase 2 $ (%) p a c
+
+(%)
+  :: Floating a
+  => Set
+  -> Attribute
+  -> Class
+  -> a
+(%) set attr c = sum counts / (fromIntegral . length) set
+  where counts = map (\p -> if isin p then 1 else 0) set
+        isin p = get p attr == c
 
 get
   :: Point
   -> Attribute
   -> Class
-get = !!
+get p a = p !! fromIntegral a
