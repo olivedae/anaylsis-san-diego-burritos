@@ -1,8 +1,11 @@
 module Decisions.ID3
 ( id3
-, entropy
+, split
+, largestGain
 , gain
-, maximumGain
+, entropy
+, proportion
+, get
 ) where
 
 import Decisions
@@ -37,10 +40,10 @@ largestGain
   -> [Field]
   -> Attribute
 largestGain set fields = attribute
-  where (_, attribute) = foldl largest canidates canidates
+  where (_, attribute)       = foldl largest canidate canidates
         (canidate:canidates) = [ (gain set field, fst field) | field <- fields ]
         largest (g, ca) (g', ca')
-          | g' < g    = (g', ca')
+          | g' > g    = (g', ca')
           | otherwise = (g, ca)
 
 gain
@@ -49,9 +52,9 @@ gain
   -> Field
   -> a
 gain set field = reduced
-  where reduced = uncertainty - uncertainty'
-        uncertainty  = entropy set field
-        uncertainty' = foldl sum' 0.0 $ split field
+  where reduced         = uncertainty - uncertainty'
+        uncertainty     = entropy set field
+        uncertainty'    = foldl sum' 0.0 $ split field
         sum' total set' = total + (proportion set' field) * (entropy set' field)
 
 entropy
@@ -59,9 +62,9 @@ entropy
   -> Set
   -> Field
   -> a
-entropy set (attribute, classes) = -e
-  where e = foldl (\total c -> total + update c) 0 classes
-        ratio = proportion set attribute
+entropy set (attribute, classes) = -entropy'
+  where entropy'     = foldl (\total c -> total + update c) 0 classes
+        ratio        = proportion set attribute
         update class = let r = ratio class
           in r * logBase 2 r
 
@@ -71,8 +74,8 @@ proportion
   -> Field
   -> a
 proportion set (attribute, class) = ratio
-  where ratio = includes / total
-        total = length set
+  where ratio    = includes / total
+        total    = length set
         includes = foldl inc 0 set
         inc count point
           | get point attribute == class = count + 1
