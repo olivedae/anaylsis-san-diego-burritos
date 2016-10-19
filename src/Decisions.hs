@@ -8,7 +8,13 @@ import Decisions.Prepare
 import qualified Data.Random.Extras as Sample (sample)
 import qualified Data.Random as Random
 
-type DataSet = ([Burrito], Integer, Integer);
+type Set       = [Point]
+type DataSet   = (Set, [Field], Attribute)
+type Point     = [Integer]
+type Class     = Integer
+type Attribute = Integer
+type Field     = (Attribute, [Class])
+
 
 -- sample: a simple wrapper over the random.extra.sample
 sample :: (Random.MonadRandom m) => Int -> [t] -> m [t]
