@@ -2,6 +2,7 @@ module Decisions.ID3
 ( id3
 , split
 , largestGain
+, largest
 , gain
 , entropy
 , entropy'
@@ -38,12 +39,18 @@ largestGain
 largestGain set fields for = field
   where (_, field) = foldl largest canidate canidates
         (canidate:canidates) = [ (gain set f for, f) | f <- fields ]
-        largest current@(currentGain,_) cand@(canidateGain,_)
-          | canidateGain > currentGain = cand
-          | otherwise = current
+
+largest
+  :: (Ord a, Floating a)
+  => (a, Field)
+  -> (a, Field)
+  -> (a, Field)
+largest current@(currentGain,_) canidate@(canidateGain,_)
+  | canidateGain > currentGain = canidate
+  | otherwise = current
 
 gain
-  :: (Eq a, Floating a)
+  :: (Ord a, Floating a)
   => Set
   -> Field
   -> Field
@@ -57,14 +64,14 @@ gain set field@(fA, fCs) target@(tA, tCs) = e - e'
             (%) sub total fA c * entropy sub target
 
 entropy
-  :: (Eq a, Floating a)
+  :: (Ord a, Floating a)
   => Set
   -> Field
   -> a
 entropy set (attr, classes) = add [ entropy' set attr c | c <- classes ]
 
 entropy'
-  :: (Eq a, Floating a)
+  :: (Ord a, Floating a)
   => Set
   -> Attribute
   -> Class
@@ -76,13 +83,13 @@ entropy' set attribute c
             total = (toInteger . length) set
 
 add
-  :: (Num a)
+  :: Num a
   => [a]
   -> a
 add = foldl (+) 0
 
 (%)
-  :: Floating a
+  :: (Ord a, Floating a)
   => Set
   -> Integer
   -> Attribute

@@ -38,7 +38,6 @@ executable          prep
 library
   exposed-modules:  Decisions
                     Decisions.Prepare
-                    Decisions.Utils
                     Decisions.ID3
   hs-source-dirs:   src
   ghc-options:      -w -O2
