@@ -4,9 +4,9 @@ module Decisions.ID3
 , largestGain
 , gain
 , entropy
+, entropy'
 , (%)
 , add
-, information
 , get
 ) where
 
@@ -43,47 +43,44 @@ largestGain set fields for = field
           | otherwise = current
 
 gain
-  :: Floating a
+  :: (Eq a, Floating a)
   => Set
   -> Field
   -> Field
   -> a
-gain set field@(a, cs) for = e - e'
-  where e  = entropy set field for
-        e' = add [ calculate s c | s <- subsets, c <- cs ]
-        subsets = split set field
+gain set field@(fA, fCs) target@(tA, tCs) = e - e'
+  where e  = entropy set target
+        e' = add [ calculate s | s <- getZipList subsets ]
+        subsets = (,) <$> ZipList fCs <*> ZipList (split set field)
         total = (toInteger . length) set
-        calculate sub c =
-          (%) sub total a c * entropy sub field for
+        calculate (c, sub) =
+            (%) sub total fA c * entropy sub target
 
 entropy
-  :: Floating a
+  :: (Eq a, Floating a)
   => Set
   -> Field
-  -> Field
   -> a
-entropy set field@(attribute, classes) for = abs entropy'
-  where entropy' = add [ calculate s c | c <- classes, s <- split set for ]
-        total = (toInteger . length) set
-        calculate sub c = information sub total attribute c
+entropy set (attribute, classes) = abs e
+  where e = add [ entropy' set attribute c | c <- classes ]
+
+entropy'
+  :: (Eq a, Floating a)
+  => Set
+  -> Attribute
+  -> Class
+  -> a
+entropy' set attribute c
+  | ratio /= 0 = abs $ ratio * logBase 2 ratio
+  | otherwise  = 0
+      where ratio = (%) set total attribute c
+            total = (toInteger . length) set
 
 add
   :: (Num a)
   => [a]
   -> a
 add = foldl (+) 0
-
-information
-  :: Floating a
-  => Set
-  -> Integer
-  -> Attribute
-  -> Class
-  -> a
-information set total attribute c
-  | ratio /= 0 = ratio * logBase 2 ratio
-  | otherwise  = 0
-  where ratio = (%) set total attribute c
 
 (%)
   :: Floating a
@@ -92,11 +89,9 @@ information set total attribute c
   -> Attribute
   -> Class
   -> a
-(%) set size attr c = instances / total
-  where instances =
-          (fromIntegral . length) $ filter isin set
-        isin p = get p attr == c
-        total = fromIntegral size
+(%) set size attr c = fromIntegral in' / fromIntegral of'
+  where in' = length $ filter (\p -> get p attr == c) set
+        of' = size
 
 get
   :: Point
