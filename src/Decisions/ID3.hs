@@ -61,8 +61,7 @@ entropy
   => Set
   -> Field
   -> a
-entropy set (attribute, classes) = abs e
-  where e = add [ entropy' set attribute c | c <- classes ]
+entropy set (attr, classes) = add [ entropy' set attr c | c <- classes ]
 
 entropy'
   :: (Eq a, Floating a)
