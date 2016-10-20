@@ -4,7 +4,6 @@ module Decisions.ID3
 , largestGain
 , gain
 , entropy
-, (*%*)
 , (%)
 , add
 , information
@@ -35,9 +34,10 @@ largestGain
   :: Set
   -> [Field]
   -> Field
-largestGain set fields = field
+  -> Field
+largestGain set fields for = field
   where (_, field) = foldl largest canidate canidates
-        (canidate:canidates) = [ (gain set f, f) | f <- fields ]
+        (canidate:canidates) = [ (gain set f for, f) | f <- fields ]
         largest current@(currentGain,_) cand@(canidateGain,_)
           | canidateGain > currentGain = cand
           | otherwise = current
@@ -46,20 +46,26 @@ gain
   :: Floating a
   => Set
   -> Field
+  -> Field
   -> a
-gain set field = e - e'
-  where e  = entropy set field
-        e' = add [ (*%*) s field * entropy s field | s <- split set field ]
+gain set field@(a, cs) for = e - e'
+  where e  = entropy set field for
+        e' = add [ calculate s c | s <- subsets, c <- cs ]
+        subsets = split set field
+        total = (toInteger . length) set
+        calculate sub c =
+          (%) sub total a c * entropy sub field for
 
 entropy
   :: Floating a
   => Set
   -> Field
+  -> Field
   -> a
-entropy set (attribute, classes) = add subsets
-  where subsets = [ calculate c | c <- classes ]
-        calculate c =
-          (%) set attribute c * information set attribute c
+entropy set field@(attribute, classes) for = abs entropy'
+  where entropy' = add [ calculate s c | c <- classes, s <- split set for ]
+        total = (toInteger . length) set
+        calculate sub c = information sub total attribute c
 
 add
   :: (Num a)
@@ -70,28 +76,27 @@ add = foldl (+) 0
 information
   :: Floating a
   => Set
+  -> Integer
   -> Attribute
   -> Class
   -> a
-information p a c = - logBase 2 $ (%) p a c
-
-(*%*)
-  :: Floating a
-  => Set
-  -> Field
-  -> a
-(*%*) _ (_, []) = 0.0
-(*%*) set (a, (c:cs)) = (%) set a c + (*%*) set (a, cs)
+information set total attribute c
+  | ratio /= 0 = ratio * logBase 2 ratio
+  | otherwise  = 0
+  where ratio = (%) set total attribute c
 
 (%)
   :: Floating a
   => Set
+  -> Integer
   -> Attribute
   -> Class
   -> a
-(%) set attr c = add counts / (fromIntegral . length) set
-  where counts = map (\p -> if isin p then 1 else 0) set
+(%) set size attr c = instances / total
+  where instances =
+          (fromIntegral . length) $ filter isin set
         isin p = get p attr == c
+        total = fromIntegral size
 
 get
   :: Point
