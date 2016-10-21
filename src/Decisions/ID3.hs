@@ -1,18 +1,19 @@
 module Decisions.ID3
-( id3
-, prune
-, split
+( prune
+, id3
 , commonClassOf
-, largestGain
-, largest
 , isempty
 , ispure
 , (.:)
+, split
+, largestGain
+, largest
 , gain
+, orderByClass
 , entropy
 , entropy'
-, (%)
 , add
+, (%)
 , get
 ) where
 

@@ -1,6 +1,5 @@
 module Decisions
-( sample
-, DataSet
+( DataSet
 , Set
 , Point
 , Class
@@ -9,6 +8,7 @@ module Decisions
 , Field
 , DecisionTree (..)
 , Decision (..)
+, sample
 ) where
 
 import Decisions.Prepare
