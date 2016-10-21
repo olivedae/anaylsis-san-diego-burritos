@@ -31,12 +31,15 @@ id3
   :: DataSet
   -> DecisionTree
 id3 (set,fs,tt@(att,cstt))
-  | ispure set tt = Leaf (att, get (head set) att)
-  | isempty fs    = Leaf (att, commonClassOf set tt)
-  | otherwise     = Node a [ Decision (get (head s) a) $ id3 (s,fs',tt) | s <- sets ]
+  | ispure set tt = leaf
+  | isempty fs    = leaf
+  | otherwise     = Node a [ make c s | (c,s) <- sets ]
     where f@(a,cs) = largestGain set fs tt
-          sets     = split set f
-          fs'      = delete f fs
+          sets = orderByClass set f
+          fs'  = delete f fs
+          leaf = Leaf (att, commonClassOf set tt)
+          make c sub = Decision c $
+            if isempty sub then leaf else id3 (sub,fs',tt)
 
 commonClassOf
   :: Set
