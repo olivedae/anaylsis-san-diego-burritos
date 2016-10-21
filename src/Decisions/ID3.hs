@@ -77,12 +77,10 @@ split
   :: Set
   -> Field
   -> [Set]
-split set (attribute, classes) = [ s | (_,s) <- split' ]
-  where split'    = Map.toList $ foldr parse dict set
+split set field@(attribute, classes) = map snd sets
+  where sets      = Map.toList $ foldr parse empty set
         parse p d = Map.adjust (p:) (get p attribute) d
-        dict      = convert $ (,) <$> ZipList classes <*> empty
-        convert   = (Map.fromList . getZipList)
-        empty     = (ZipList . repeat) []
+        empty     = Map.fromList $ orderByClass [] field
 
 largestGain
   :: Set
@@ -110,11 +108,17 @@ gain
   -> a
 gain set field@(fA, fCs) target@(tA, tCs) = e - e'
   where e  = entropy set target
-        e' = add [ calculate s | s <- getZipList subsets ]
-        subsets = (,) <$> ZipList fCs <*> ZipList (split set field)
+        e' = add [ calculate s | s <- orderByClass set field ]
         total = (toInteger . length) set
-        calculate (c, sub) =
-            (%) sub total fA c * entropy sub target
+        calculate (c, sub)
+          = (%) sub total fA c * entropy sub target
+
+orderByClass
+  :: Set
+  -> Field
+  -> [(Class, Set)]
+orderByClass set field@(_, classes) = getZipList groups
+  where groups = (,) <$> ZipList classes <*> ZipList (split set field)
 
 entropy
   :: (Ord a, Floating a)
