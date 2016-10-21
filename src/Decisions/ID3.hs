@@ -30,7 +30,7 @@ prune = id
 id3
   :: DataSet
   -> DecisionTree
-id3 (set,fs,tt@(att,cstt))
+id3 (set, fs, tt@(att, _))
   | ispure set tt = leaf
   | isempty fs    = leaf
   | otherwise     = Node a [ make c s | (c,s) <- sets ]
@@ -72,10 +72,11 @@ split
   :: Set
   -> Field
   -> [Set]
-split set field@(attribute, classes) = map snd sets
+split set (attribute, classes) = map snd sets
   where sets      = Map.toList $ foldr parse empty set
         parse p d = Map.adjust (p:) (get p attribute) d
-        empty     = Map.fromList $ orderByClass [] field
+        empty     = Map.fromList $ map new classes
+        new c     = (c, [])
 
 largestGain
   :: Set
