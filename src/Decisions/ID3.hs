@@ -2,6 +2,7 @@ module Decisions.ID3
 ( id3
 , prune
 , split
+, commonClassOf
 , largestGain
 , largest
 , isempty
@@ -37,20 +38,12 @@ id3
   :: DataSet
   -> DecisionTree
 id3 (set,fs,tt@(att,cstt))
-  -- no examples are left
-  -- | isempty set =
   | ispure set tt = Leaf (att, get (head set) att)
-  | isempty fs    = Leaf (tt, commonClassOf set tt)
+  | isempty fs    = Leaf (att, commonClassOf set tt)
   | otherwise     = Node a [ Decision (get (head s) a) $ id3 (s,fs',tt) | s <- sets ]
     where f@(a,cs) = largestGain set fs tt
           sets     = split set f
-          fs'      = delete fs f
-\
-onDecision
-  :: DataSet
-  -> Attribute
-  -> Decision
-onDecision ds attribute = Decision class $ id3 ds
+          fs'      = delete f fs
 
 commonClassOf
   :: Set
