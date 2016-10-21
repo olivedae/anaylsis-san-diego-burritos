@@ -7,6 +7,8 @@ module Decisions
 , Attribute
 , Pair
 , Field
+, DecisionTree (..)
+, Decision (..)
 ) where
 
 import Decisions.Prepare
@@ -22,6 +24,13 @@ type Attribute = Integer
 type Pair      = (Attribute, Class)
 type Field     = (Attribute, [Class])
 
+data DecisionTree =
+    Node Attribute [Decision]
+  | Leaf Pair
+  deriving (Show, Read)
+
+data Decision = Decision Class DecisionTree
+  deriving (Show, Read)
 
 -- sample: a simple wrapper over the random.extra.sample
 sample :: (Random.MonadRandom m) => Int -> [t] -> m [t]

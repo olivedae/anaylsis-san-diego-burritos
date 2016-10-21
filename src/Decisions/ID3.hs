@@ -21,14 +21,6 @@ import Control.Applicative
 import qualified Data.Map as Map
 import Data.List (delete)
 
-data DecisionTree =
-    Node Attribute [Decision]
-  | Leaf Pair
-  deriving (Show, Read)
-
-data Decision = Decision Class DecisionTree
-  deriving (Show, Read)
-
 prune
   :: a
   -> a
@@ -51,8 +43,7 @@ commonClassOf
   -> Class
 commonClassOf set (attr, classes) = c
   where (_, c) = foldl largest ratio ratios
-        (ratio:ratios) = [ ((%) set total attr c, c) | c <- classes ]
-        total = (toInteger . length) set
+        (ratio:ratios) = [ ((%) set (length set) attr c, c) | c <- classes ]
 
 isempty
   :: [a]
@@ -109,9 +100,8 @@ gain
 gain set field@(fA, fCs) target@(tA, tCs) = e - e'
   where e  = entropy set target
         e' = add [ calculate s | s <- orderByClass set field ]
-        total = (toInteger . length) set
         calculate (c, sub)
-          = (%) sub total fA c * entropy sub target
+          = (%) sub (length set) fA c * entropy sub target
 
 orderByClass
   :: Set
@@ -136,8 +126,7 @@ entropy'
 entropy' set attribute c
   | ratio /= 0 = abs $ ratio * logBase 2 ratio
   | otherwise  = 0
-      where ratio = (%) set total attribute c
-            total = (toInteger . length) set
+      where ratio = (%) set (length set) attribute c
 
 add
   :: Num a
@@ -148,13 +137,13 @@ add = foldl (+) 0
 (%)
   :: (Ord a, Floating a)
   => Set
-  -> Integer
+  -> Int
   -> Attribute
   -> Class
   -> a
 (%) set size attr c = fromIntegral in' / fromIntegral of'
   where in' = length $ filter (\p -> get p attr == c) set
-        of' = size
+        of' = toInteger size
 
 get
   :: Point
