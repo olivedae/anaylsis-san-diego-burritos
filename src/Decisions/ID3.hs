@@ -1,8 +1,12 @@
 module Decisions.ID3
 ( id3
+, prune
 , split
 , largestGain
 , largest
+, isempty
+, ispure
+, (.:)
 , gain
 , entropy
 , entropy'
@@ -14,11 +18,67 @@ module Decisions.ID3
 import Decisions
 import Control.Applicative
 import qualified Data.Map as Map
+import Data.List (delete)
 
-id3
+data DecisionTree =
+    Node Attribute [Decision]
+  | Leaf Pair
+  deriving (Show, Read)
+
+data Decision = Decision Class DecisionTree
+  deriving (Show, Read)
+
+prune
   :: a
   -> a
-id3 = id
+prune = id
+
+id3
+  :: DataSet
+  -> DecisionTree
+id3 (set,fs,tt@(att,cstt))
+  -- no examples are left
+  -- | isempty set =
+  | ispure set tt = Leaf (att, get (head set) att)
+  | isempty fs    = Leaf (tt, commonClassOf set tt)
+  | otherwise     = Node a [ Decision (get (head s) a) $ id3 (s,fs',tt) | s <- sets ]
+    where f@(a,cs) = largestGain set fs tt
+          sets     = split set f
+          fs'      = delete fs f
+\
+onDecision
+  :: DataSet
+  -> Attribute
+  -> Decision
+onDecision ds attribute = Decision class $ id3 ds
+
+commonClassOf
+  :: Set
+  -> Field
+  -> Class
+commonClassOf set (attr, classes) = c
+  where (_, c) = foldl largest ratio ratios
+        (ratio:ratios) = [ ((%) set total attr c, c) | c <- classes ]
+        total = (toInteger . length) set
+
+isempty
+  :: [a]
+  -> Bool
+isempty [] = True
+isempty xs = False
+
+ispure
+  :: Set
+  -> Field
+  -> Bool
+ispure = (.:) (0 ==) entropy
+
+(.:)
+  :: (Functor f1, Functor f)
+  => (a -> b)
+  -> f (f1 a)
+  -> f (f1 b)
+(.:) = fmap.fmap
 
 split
   :: Set
@@ -42,11 +102,11 @@ largestGain set fields for = field
 
 largest
   :: (Ord a, Floating a)
-  => (a, Field)
-  -> (a, Field)
-  -> (a, Field)
-largest current@(currentGain,_) canidate@(canidateGain,_)
-  | canidateGain > currentGain = canidate
+  => (a, b)
+  -> (a, b)
+  -> (a, b)
+largest current@(currentAmt,_) canidate@(canidateAmt,_)
+  | canidateAmt > currentAmt = canidate
   | otherwise = current
 
 gain

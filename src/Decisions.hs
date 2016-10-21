@@ -5,6 +5,7 @@ module Decisions
 , Point
 , Class
 , Attribute
+, Pair
 , Field
 ) where
 
@@ -18,6 +19,7 @@ type Set       = [Point]
 type Point     = [Integer]
 type Class     = Integer
 type Attribute = Integer
+type Pair      = (Attribute, Class)
 type Field     = (Attribute, [Class])
 
 
