@@ -25,7 +25,8 @@ type Pair      = (Attribute, Class)
 type Field     = (Attribute, [Class])
 
 data DecisionTree =
-    Node Attribute [Decision]
+    Empty
+  | Node Attribute [Decision]
   | Leaf Pair
   deriving (Show, Read)
 
