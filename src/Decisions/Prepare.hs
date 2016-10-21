@@ -14,7 +14,9 @@ module Decisions.Prepare
 , allFeatures
 ) where
 
+import qualified Data.ByteString.Char8 as BChar
 import Data.Maybe
+import qualified Text.Read as Read
 import qualified Data.List as List
 import Control.Exception (IOException)
 import qualified Control.Exception as Exception
@@ -65,53 +67,52 @@ instance Category Cost where
   category HighCost = Just 3
 
 instance FromField Score where
-  parseField ""    = pure NoScore
-  parseField "0"   = pure LowScore
-  parseField "0.5" = pure LowScore
-  parseField "1"   = pure LowScore
-  parseField "1.5" = pure LowScore
-  parseField "2"   = pure LowScore
-  parseField "2.5" = pure LowScore
-  parseField "3"   = pure AverageScore
-  parseField "3.5" = pure AverageScore
-  parseField "4"   = pure AverageScore
-  parseField "4.5" = pure HighScore
-  parseField "4.5" = pure HighScore
-  parseField "5.0" = pure HighScore
+  parseField str
+    | isNothing score = pure NoScore
+    | otherwise       = pure $ toScore (fromJust score)
+      where score = unwrap str :: Maybe Double
+            toScore s
+              | s > 4     = LowScore
+              | s > 2.5   = AverageScore
+              | otherwise = HighScore
 
--- todo
 instance FromField Cost where
-  parseField _ = pure AverageCost
+  parseField str
+    | isNothing cost = pure NoCost
+    | otherwise      = pure $ toCost (fromJust cost)
+      where cost = unwrap str :: Maybe Double
+            toCost c
+              | c > 8.5   = HighCost
+              | c > 6.5   = AverageCost
+              | otherwise = LowCost
+
+unwrap
+  :: (Read a)
+  => BChar.ByteString
+  -> Maybe a
+unwrap = Read.readMaybe . BChar.unpack
 
 data Burrito = Burrito
-  { yelp        :: !Score
-  , google      :: !Score
-  , cost        :: !Cost
+  { cost        :: !Cost
   , hunger      :: !Score
   , tortilla    :: !Score
-  , temperature :: !Score
   , meat        :: !Score
   , fillings    :: !Score
   , meatToFill  :: !Score
   , uniformity  :: !Score
-  , salsa       :: !Score
   , wrap        :: !Score
   , overall     :: !Score
   } deriving (Show, Read, Eq, Ord)
 
 instance FromNamedRecord Burrito where
   parseNamedRecord r = Burrito
-    <$> r .: "Yelp"
-    <*> r .: "Google"
-    <*> r .: "Cost"
+    <$> r .: "Cost"
     <*> r .: "Hunger"
     <*> r .: "Tortilla"
-    <*> r .: "Temp"
     <*> r .: "Meat"
     <*> r .: "Fillings"
     <*> r .: "Meat:filling"
     <*> r .: "Uniformity"
-    <*> r .: "Salsa"
     <*> r .: "Wrap"
     <*> r .: "overall"
 
@@ -129,17 +130,13 @@ clean = List.filter (isJust . (flatten allFeatures))
 allFeatures
   :: [Burrito -> Maybe Integer]
 allFeatures =
-  [ category . yelp
-  , category . google
-  , category . cost
+  [ category . cost
   , category . hunger
   , category . tortilla
-  , category . temperature
   , category . meat
   , category . fillings
   , category . meatToFill
   , category . uniformity
-  , category . salsa
   , category . wrap
   , category . overall ]
 
