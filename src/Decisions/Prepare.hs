@@ -166,7 +166,7 @@ flattenAll
   :: [Burrito -> Maybe Integer]
   -> [Burrito]
   -> [Maybe [Integer]]
-flattenAll fs pokemon = lift pokemon
+flattenAll fs burrito = lift burrito
   where lift = fmap (flatten fs)
 
 flatten
