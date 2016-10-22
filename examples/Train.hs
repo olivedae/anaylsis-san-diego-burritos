@@ -7,10 +7,11 @@ import Data.Maybe
 import Decisions
 import Decisions.ID3
 
-toBurrito
-  :: String
-  -> [Burrito]
-toBurrito = read
+openBurritos
+  :: FilePath
+  -> IO [Burrito]
+openBurritos file =
+  openFile file ReadMode >>= fmap read . hGetContents
 
 fields
   :: [Field]
@@ -24,17 +25,21 @@ fields =
   , (6, [1, 2, 3])
   , (7, [1, 2, 3]) ]
 
+target
+  :: Field
+target = (8, [1, 2, 3])
+
 main = do
   putStrLn "Training model"
 
-  handle <- openFile "data/burrito.training.txt" ReadMode
+  -- Gather together processed dataset for training
+  burrito <- openBurritos "data/burrito.training.txt"
 
-  burrito <- toBurrito <$> hGetContents handle
-
+  -- Convert data types in accordance to id3
   let dataset = fromJust <$> flattenAll allFeatures burrito
-  
-  let target = (8, [1, 2, 3])
 
+  -- Create a trained model
   let model = id3 (dataset, fields, target)
 
+  -- and save
   writeFile "data/burrito.model.txt" (show model)
