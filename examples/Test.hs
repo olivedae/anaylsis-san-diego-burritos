@@ -30,8 +30,8 @@ main = do
   let predictions = map (fromJust . \b -> b >>= classify model >>= return . snd) burrito
 
   let confusion = buildConfusionMatrix
-    (map fromJust burrito)
-    target
-    predictions
+        (map fromJust burrito)
+        target
+        predictions
 
   print confusion

@@ -91,9 +91,9 @@ build
   -> Map Class (Map Class Int)
 build [] _ _ m = m
 build _ [] _ m = m
-build (s:ss) (c:cs) attribute m = build ss cs attribute m'
+build (s:ss) (p:ps) attribute m = build ss ps attribute m'
   where actual = get s attribute
-        m'     = adjust (adjust (1+) c) actual m
+        m'     = adjust (adjust (1+) p) actual m
 
 (.:)
   :: (Functor f1, Functor f)
