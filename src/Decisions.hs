@@ -47,7 +47,7 @@ classify (Node attribute branches) example
   | isempty branch = Nothing
   | otherwise      = classify (tree $ head branch) example
     where c = get example attribute
-          branch = filter (\ d -> token d == c) branches
+          branch = filter (\d -> token d == c) branches
 
 sample :: (Random.MonadRandom m) => Int -> [t] -> m [t]
 sample s xs = sampled
