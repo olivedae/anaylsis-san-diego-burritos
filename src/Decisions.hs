@@ -9,16 +9,30 @@ module Decisions
 , DecisionTree (..)
 , Decision (..)
 , classify
-, sample
+, buildConfusionMatrix
+, attribute
+, classes
 , (.:)
 , isempty
 , get
+, sample
+, orderByClass
+, split
 ) where
 
-import Decisions.Prepare
-
+import Data.Map
+  ( Map
+  , fromList
+  , toList
+  , adjust
+  )
 import qualified Data.Random.Extras as Sample (sample)
-import qualified Data.Random as Random
+import Data.Random
+  ( MonadRandom
+  , runRVar
+  , StdRandom(..)
+  )
+import Control.Applicative
 
 type DataSet   = (Set, [Field], Field)
 type Set       = [Point]
@@ -49,9 +63,37 @@ classify (Node attribute branches) example
     where c = get example attribute
           branch = filter (\d -> token d == c) branches
 
-sample :: (Random.MonadRandom m) => Int -> [t] -> m [t]
-sample s xs = sampled
-  where sampled = Random.runRVar (Sample.sample s xs) Random.StdRandom
+data ConfusionMatrix = ConfusionMatrix
+  { attribute :: Attribute
+  , classes   :: [Class]
+  , matrix    :: Map Class (Map Class Int)
+  } deriving (Show, Read)
+
+buildConfusionMatrix
+  :: Set
+  -> Field
+  -> [Class]
+  -> ConfusionMatrix
+buildConfusionMatrix set field@(attribute, classes) predictions = table
+  where cols  = new 0
+        empty = new cols
+        table = ConfusionMatrix
+          attribute
+          classes
+          (build set classes attribute empty)
+        new i = fromList $ map (\c -> (c, i)) classes
+
+build
+  :: Set
+  -> [Class]
+  -> Attribute
+  -> Map Class (Map Class Int)
+  -> Map Class (Map Class Int)
+build [] _ _ m = m
+build _ [] _ m = m
+build (s:ss) (c:cs) attribute m = build ss cs attribute m'
+  where actual = get s attribute
+        m'     = adjust (adjust (1+) c) actual m
 
 (.:)
   :: (Functor f1, Functor f)
@@ -71,3 +113,24 @@ get
   -> Attribute
   -> Class
 get p a = p !! fromIntegral a
+
+sample :: (MonadRandom m) => Int -> [t] -> m [t]
+sample s xs = sampled
+  where sampled = runRVar (Sample.sample s xs) StdRandom
+
+orderByClass
+  :: Set
+  -> Field
+  -> [(Class, Set)]
+orderByClass set field@(_, classes) = getZipList groups
+  where groups = (,) <$> ZipList classes <*> ZipList (split set field)
+
+split
+  :: Set
+  -> Field
+  -> [Set]
+split set (attribute, classes) = map snd sets
+  where sets      = toList $ foldr parse empty set
+        parse p d = adjust (p:) (get p attribute) d
+        empty     = fromList $ map new classes
+        new c     = (c, [])

@@ -3,11 +3,9 @@ module Decisions.ID3
 , id3
 , commonClassOf
 , ispure
-, split
 , largestGain
 , largest
 , gain
-, orderByClass
 , entropy
 , entropy'
 , add
@@ -52,16 +50,6 @@ ispure
   -> Bool
 ispure = (.:) (0 ==) entropy
 
-split
-  :: Set
-  -> Field
-  -> [Set]
-split set (attribute, classes) = map snd sets
-  where sets      = Map.toList $ foldr parse empty set
-        parse p d = Map.adjust (p:) (get p attribute) d
-        empty     = Map.fromList $ map new classes
-        new c     = (c, [])
-
 largestGain
   :: Set
   -> [Field]
@@ -91,13 +79,6 @@ gain set field@(fA, fCs) target@(tA, tCs) = e - e'
         e' = add [ calculate s | s <- orderByClass set field ]
         calculate (c, sub)
           = (%) sub (length set) fA c * entropy sub target
-
-orderByClass
-  :: Set
-  -> Field
-  -> [(Class, Set)]
-orderByClass set field@(_, classes) = getZipList groups
-  where groups = (,) <$> ZipList classes <*> ZipList (split set field)
 
 entropy
   :: (Ord a, Floating a)

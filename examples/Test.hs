@@ -22,5 +22,4 @@ main = do
   model <- openModel "data/burrito.model.txt"
   burrito <- openBurritos "data/burrito.testing.txt"
 
-
   return ()
