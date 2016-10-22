@@ -2,9 +2,7 @@ module Decisions.ID3
 ( prune
 , id3
 , commonClassOf
-, isempty
 , ispure
-, (.:)
 , split
 , largestGain
 , largest
@@ -14,7 +12,6 @@ module Decisions.ID3
 , entropy'
 , add
 , (%)
-, get
 ) where
 
 import Decisions
@@ -49,24 +46,11 @@ commonClassOf set (attr, classes) = c
   where (_, c) = foldl largest ratio ratios
         (ratio:ratios) = [ ((%) set (length set) attr c, c) | c <- classes ]
 
-isempty
-  :: [a]
-  -> Bool
-isempty [] = True
-isempty xs = False
-
 ispure
   :: Set
   -> Field
   -> Bool
 ispure = (.:) (0 ==) entropy
-
-(.:)
-  :: (Functor f1, Functor f)
-  => (a -> b)
-  -> f (f1 a)
-  -> f (f1 b)
-(.:) = fmap.fmap
 
 split
   :: Set
@@ -149,9 +133,3 @@ add = foldl (+) 0
 (%) set size attr c = fromIntegral in' / fromIntegral of'
   where in' = length $ filter (\p -> get p attr == c) set
         of' = toInteger size
-
-get
-  :: Point
-  -> Attribute
-  -> Class
-get p a = p !! fromIntegral a

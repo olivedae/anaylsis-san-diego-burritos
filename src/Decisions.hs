@@ -8,7 +8,11 @@ module Decisions
 , Field
 , DecisionTree (..)
 , Decision (..)
+, classify
 , sample
+, (.:)
+, isempty
+, get
 ) where
 
 import Decisions.Prepare
@@ -25,15 +29,45 @@ type Pair      = (Attribute, Class)
 type Field     = (Attribute, [Class])
 
 data DecisionTree =
-    Empty
-  | Node Attribute [Decision]
+    Node Attribute [Decision]
   | Leaf Pair
   deriving (Show, Read)
 
-data Decision = Decision Class DecisionTree
-  deriving (Show, Read)
+data Decision = Decision
+  { token :: Class
+  , tree  :: DecisionTree
+  } deriving (Show, Read)
 
--- sample: a simple wrapper over the random.extra.sample
+classify
+  :: DecisionTree
+  -> Point
+  -> Maybe Pair
+classify (Leaf field) _ = Just field
+classify (Node attribute branches) example
+  | isempty branch = Nothing
+  | otherwise      = classify (tree $ head branch) example
+    where c = get example attribute
+          branch = filter (\ d -> token d == c) branches
+
 sample :: (Random.MonadRandom m) => Int -> [t] -> m [t]
 sample s xs = sampled
   where sampled = Random.runRVar (Sample.sample s xs) Random.StdRandom
+
+(.:)
+  :: (Functor f1, Functor f)
+  => (a -> b)
+  -> f (f1 a)
+  -> f (f1 b)
+(.:) = fmap.fmap
+
+isempty
+  :: [a]
+  -> Bool
+isempty [] = True
+isempty xs = False
+
+get
+  :: Point
+  -> Attribute
+  -> Class
+get p a = p !! fromIntegral a
