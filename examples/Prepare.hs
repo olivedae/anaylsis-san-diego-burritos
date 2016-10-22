@@ -3,7 +3,7 @@ import System.Environment (getArgs)
 import Decisions.Prepare
 import Decisions (sample)
 import System.IO
-import qualified Data.List as List
+import Data.List (\\)
 
 computeSizes :: (String, String) -> (Int, Int)
 computeSizes (total, training) = (convert total', convert training')
@@ -30,7 +30,7 @@ main = do
       -- Seperate out new datasets
       cleanAll <- sample total' burrito'
       cleanTraining <- sample training' cleanAll
-      let cleanTesting = cleanAll List.\\ cleanTraining
+      let cleanTesting = cleanAll \\ cleanTraining
 
       let fTraining = "data/burrito.training.txt"
           fTesting  = "data/burrito.testing.txt"
