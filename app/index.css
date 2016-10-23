@@ -5,7 +5,7 @@
   font-weight: bold;
   color: rgb(103, 103, 103);
   box-sizing: border-box;
-  font-size: 17px;
+  font-size: 14px;
 }
 
 .node,
@@ -24,8 +24,8 @@
 
 .node .attribute {
   border-bottom: 2px solid rgb(191, 191, 191);
-  width: 60%;
-  margin-left: 20%;
+  width: 80%;
+  margin-left: 10%;
   padding-bottom: 10px;
 }
 
@@ -44,20 +44,6 @@
   height: 0;
 }
 
-.decision:first-child:nth-last-child(1) {
-  width: 100%;
-}
-
-.decision:first-child:nth-child(2),
-.decision:first-child:nth-last-child(2) ~ .decision {
-  width: 50%;
-}
-
-.decision:first-child:nth-last-child(3),
-.decision:first-child:nth-last-child(3) ~ .decision {
-  width: 33.3333%;
-}
-
 .decision {
   display: inline-block;
   width: 100%;
@@ -71,15 +57,15 @@
 }
 
 .leaf.c1 {
-  color: rgb(47, 180, 140);
+  color: rgb(167, 231, 47);
 }
 
 .leaf.c2 {
-  color: rgb(137, 209, 46);
+  color: rgb(101, 186, 104);
 }
 
 .leaf.c3 {
-  color: rgb(230, 228, 73)
+  color: rgb(36, 107, 134);
 }
 
 .spine {
