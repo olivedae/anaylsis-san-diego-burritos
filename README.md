@@ -5,7 +5,9 @@
 
 ### Installing, building, and so on
 
-Everything that needs to be taken care of is done by Haskell's package manager, Cabal. Entering
+Everything that needs to be taken care of is done by Haskell's package manager, Cabal.
+
+Entering
 
 ```
 % make run
