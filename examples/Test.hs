@@ -4,6 +4,8 @@ import Decisions.Prepare (allFeatures, flattenAll, Burrito)
 import Decisions
 import System.IO
 import Data.Maybe (fromJust)
+import Control.Applicative
+import Data.List (concat, intersperse)
 
 openModel
   :: FilePath
@@ -19,19 +21,44 @@ openBurritos file =
 
 target
   :: Field
-target = (8, [1, 2, 3])
+target = (overall, [1, 2, 3])
+
+overall
+  :: Attribute
+overall = 8
+
+header
+  :: String
+header = (concat . intersperse ",") fields
+  where fields =
+          [ "algorithm"
+          , "actual"
+          , "predicted"
+          , "correct" ]
+
+format
+  :: [Class]
+  -> [Class]
+  -> Int
+  -> String
+format actual predicted index = (concat . intersperse ",") formated
+  where formated =
+          [ "id3"
+          , show actual'
+          , show predicted'
+          , show (actual' == predicted') ]
+        actual'    = actual !! index
+        predicted' = predicted !! index
 
 main = do
   putStrLn "Testing model"
 
   model <- openModel "data/burrito.model.txt"
-  burrito <- flattenAll allFeatures <$> openBurritos "data/burrito.testing.txt"
+  burrito <- map (fromJust) . flattenAll allFeatures <$> openBurritos "data/burrito.testing.txt"
 
-  let predictions = map (fromJust . \b -> b >>= classify model >>= return . snd) burrito
+  let actual      = map (flip get overall) burrito
+      predictions = map (snd . fromJust . classify model) burrito
+      instances   = [0 .. (length predictions) - 1]
+      csv         = map (format actual predictions) instances
 
-  let confusion = buildConfusionMatrix
-        (map fromJust burrito)
-        target
-        predictions
-
-  print confusion
+  writeFile "data/compare.csv" $ unlines [header, unlines csv]

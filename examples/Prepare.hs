@@ -3,7 +3,7 @@ import System.Environment (getArgs)
 import Decisions.Prepare
 import Decisions (sample)
 import System.IO
-import Data.List (\\)
+import Data.List ((\\))
 
 computeSizes :: (String, String) -> (Int, Int)
 computeSizes (total, training) = (convert total', convert training')
