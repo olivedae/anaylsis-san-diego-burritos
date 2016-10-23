@@ -3,7 +3,16 @@ module Decisions.ID3
 , id3
 ) where
 
-import Decisions
+import Decisions.Utils
+  ( ispure
+  , isempty
+  , largestGain
+  , orderByClass
+  , commonClassOf )
+import Decisions.Types
+  ( DataSet
+  , DecisionTree (..)
+  , Decision (..) )
 import Data.List (delete)
 
 prune
