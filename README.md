@@ -17,6 +17,16 @@ will take care of builing the package in addition to executing the `prep`, `trai
 
 The paper requires several files made by the above exectuables, however, the folder includes correctly processed data from the start.
 
+A visual of the decision tree requires the above mentioned steps.
+
+After, type
+
+```
+% make server
+```
+
+which will start a local web server and open a browser tab pointing to its address (in case this doesn't work the URL is `http://localhost:8000` and can be changed if needed to). Again, a visual is included without having to do this.
+
 ### Overview
 
 What makes a burrito enjoyable? The burrito is the hallmark of delicous taco shop food: tasty, inexpensive, and filling, yet, the characetirs of a good burrito is open to discussion. To provide insight several classifiers are trained on a [San Diego survey](https://www.kaggle.com/srcole/burritos-in-san-diego) consisisting of various core dimenisons of over 200 burritos. The selected features are

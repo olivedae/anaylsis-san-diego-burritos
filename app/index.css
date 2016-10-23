@@ -1,0 +1,88 @@
+@import url('https://fonts.googleapis.com/css?family=Lato:400,700');
+
+* {
+  font-family: 'Lato', sans-serif;
+  font-weight: bold;
+  color: rgb(103, 103, 103);
+  box-sizing: border-box;
+  font-size: 17px;
+}
+
+.node,
+.decision,
+.leaf {
+  position: relative;
+}
+
+.node {
+  text-align: center;
+  display: inline-block;
+  width: 100%;
+  margin-top: 25px;
+  padding-top: 7px;
+}
+
+.node .attribute {
+  border-bottom: 2px solid rgb(191, 191, 191);
+  width: 60%;
+  margin-left: 20%;
+  padding-bottom: 10px;
+}
+
+.decisions {
+  width: 100%;
+  margin-top: 15px;
+  height: auto;
+}
+
+.decisions:after {
+  visibility: hidden;
+  display: block;
+  font-size: 0;
+  content: " ";
+  clear: both;
+  height: 0;
+}
+
+.decision:first-child:nth-last-child(1) {
+  width: 100%;
+}
+
+.decision:first-child:nth-child(2),
+.decision:first-child:nth-last-child(2) ~ .decision {
+  width: 50%;
+}
+
+.decision:first-child:nth-last-child(3),
+.decision:first-child:nth-last-child(3) ~ .decision {
+  width: 33.3333%;
+}
+
+.decision {
+  display: inline-block;
+  width: 100%;
+  float: left;
+  width: 50%;
+}
+
+.leaf {
+  margin-top: 25px;
+  padding-top: 7px;
+}
+
+.leaf.c1 {
+  color: rgb(208, 63, 140);
+}
+
+.leaf.c2 {
+  color: rgb(62, 203, 72);
+}
+
+.spine {
+  width: 2px;
+  height: 15px;
+  background: rgb(191, 191, 191);
+  position: absolute;
+  left: 50%;
+  top: -15px;
+}
