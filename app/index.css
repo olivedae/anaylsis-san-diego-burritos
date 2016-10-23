@@ -62,7 +62,7 @@
   display: inline-block;
   width: 100%;
   float: left;
-  width: 50%;
+  width: 33.3333%;
 }
 
 .leaf {
@@ -71,11 +71,15 @@
 }
 
 .leaf.c1 {
-  color: rgb(208, 63, 140);
+  color: rgb(47, 180, 140);
 }
 
 .leaf.c2 {
-  color: rgb(62, 203, 72);
+  color: rgb(137, 209, 46);
+}
+
+.leaf.c3 {
+  color: rgb(230, 228, 73)
 }
 
 .spine {

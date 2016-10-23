@@ -6,6 +6,11 @@ import Control.Exception
 import Data.Maybe
 import Decisions
 import Decisions.ID3
+import Data.Map as Map
+  ( Map
+  , fromList
+  , lookup
+  )
 
 openBurritos
   :: FilePath
@@ -29,6 +34,34 @@ target
   :: Field
 target = (8, [1, 2, 3])
 
+type AttributeLabel = String
+type ClassLabels    = Map Integer String
+
+toHtml
+  :: [(AttributeLabel, ClassLabels)]
+  -> DecisionTree
+  -> String
+toHtml labels (Leaf (a, c)) = "<div class='leaf c" ++ (show c) ++ "'><div class='spine'></div>" ++ label ++ "</div>"
+  where (Just label) = Map.lookup c (snd $ labels !! fromInteger a)
+toHtml labels (Node attribute decisions) = "<div class='node'><div class='spine'></div><div class='attribute'>" ++ (fst $ labels !! fromInteger attribute) ++ "</div><div class='decisions'>" ++ display decisions ++ "</div></div>"
+  where display (d:ds) = "<div class='decision'><div class='spine'></div><div class='class'>" ++ label (token d) ++ "</div>" ++ toHtml labels (tree d) ++ "</div>" ++ display ds
+        display []     = ""
+        label c = fromJust $ Map.lookup c (snd $ labels !! fromInteger attribute)
+
+modelLabels
+  :: [(AttributeLabel, ClassLabels)]
+modelLabels =
+  [ ("cost", scores)
+  , ("hunger", scores)
+  , ("tortilla", scores)
+  , ("meat", scores)
+  , ("fillings", scores)
+  , ("meat to fill", scores)
+  , ("uniformity", scores)
+  , ("wrap", scores)
+  , ("overall", scores) ]
+    where scores = fromList $ [(1, "low"), (2, "avg"), (3, "high")]
+
 main = do
   putStrLn "Training model"
 
@@ -43,3 +76,4 @@ main = do
 
   -- and save
   writeFile "data/burrito.model.txt" (show model)
+  writeFile "data/tree.html" $ toHtml modelLabels model
