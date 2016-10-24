@@ -41,26 +41,26 @@ toHtml
   :: [(AttributeLabel, ClassLabels)]
   -> DecisionTree
   -> String
-toHtml labels (Leaf (a, c)) = "<div class='leaf c" ++ (show c) ++ "'><div class='spine'></div>" ++ label ++ "</div>"
+toHtml labels (Leaf (a, c)) = "<div class='leaf'><div class='spine'></div><div class='tick l" ++ (show c) ++ "' data-toggle='tooltip' title='" ++ label ++ "'></div></div>"
   where (Just label) = Map.lookup c (snd $ labels !! fromInteger a)
-toHtml labels (Node attribute decisions) = "<div class='node'><div class='spine'></div><div class='attribute'>" ++ (fst $ labels !! fromInteger attribute) ++ "</div><div class='decisions'>" ++ display decisions ++ "</div></div>"
-  where display (d:ds) = "<div class='decision'><div class='spine'></div><div class='class'>" ++ label (token d) ++ "</div>" ++ toHtml labels (tree d) ++ "</div>" ++ display ds
+toHtml labels (Node attribute decisions) = "<div class='node'><div class='spine'></div><div class='tick n" ++ (show attribute) ++ "' data-toggle='tooltip' title='" ++ (fst $ labels !! fromInteger attribute) ++ "'></div><div class='branch'></div><div class='decisions'>" ++ display decisions ++ "</div></div>"
+  where display (d:ds) = "<div class='decision'><div class='spine'></div><div class='tick d" ++ show (token d) ++ "' data-toggle='tooltip' title='" ++ label (token d) ++ "'></div>" ++ toHtml labels (tree d) ++ "</div>" ++ display ds
         display []     = ""
         label c = fromJust $ Map.lookup c (snd $ labels !! fromInteger attribute)
 
 modelLabels
   :: [(AttributeLabel, ClassLabels)]
 modelLabels =
-  [ ("cost", scores)
-  , ("hunger", scores)
-  , ("tortilla", scores)
-  , ("meat", scores)
-  , ("fillings", scores)
-  , ("meat to fill", scores)
-  , ("uniformity", scores)
-  , ("wrap", scores)
-  , ("overall", scores) ]
-    where scores = fromList $ [(1, "low"), (2, "avg"), (3, "high")]
+  [ ("Cost", scores)
+  , ("Hunger", scores)
+  , ("Tortilla", scores)
+  , ("Meat", scores)
+  , ("Fillings", scores)
+  , ("Meat to fill ratio", scores)
+  , ("Uniformity", scores)
+  , ("Wrap", scores)
+  , ("Overall", scores) ]
+    where scores = fromList $ [(1, "Low"), (2, "Average"), (3, "High")]
 
 main = do
   putStrLn "Training model"
@@ -72,7 +72,7 @@ main = do
   let dataset = fromJust <$> flattenAll allFeatures burrito
 
   -- Create a trained model
-  let model = id3 (dataset, fields, target)
+  let model = id3 (dataset, fields, target, 0, 4)
 
   -- and save
   writeFile "data/burrito.model.txt" (show model)

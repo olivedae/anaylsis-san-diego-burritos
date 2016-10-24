@@ -5,12 +5,54 @@
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
   <title>Decision Trees !!!!!</title>
 
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
   <link rel="stylesheet" type="text/css" href="app/index.css">
 </head>
 
 <body ng-app="Treezz">
+  <nav class="navbar navbar-default">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#">
+          ID3 Decision Tree
+        </a>
+        <p class="navbar-text">
+          Hover over ticks to view their description
+        </p>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page-header key">
+    <h3>Key</h3>
+    <strong>Attributes</strong>
+    <ul class="list-inline">
+      <li>Cost <div class="tick n0 large"></div></li>
+      <li>Hunger <div class="tick n1 large"></div></li>
+      <li>Tortilla <div class="tick n2 large"></div></li>
+      <li>Meat <div class="tick n3 large"></div></li>
+      <li>Fillings <div class="tick n4 large"></div></li>
+      <li>Meat to fill ratio <div class="tick n5 large"></div></li>
+      <li>Uniformity <div class="tick n6 large"></div></li>
+      <li>Wrap <div class="tick n7 large"></div></li>
+    </ul>
+    <strong>Classes</strong>
+    <ul class="list-inline">
+      <li>Low <div class="tick d1 large"></div></li>
+      <li>Average <div class="tick d2 large"></div></li>
+      <li>High <div class="tick d3 large"></div></li>
+    </ul>
+  </div>
+
   <decisions></decisions>
 </body>
 
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.min.js"></script>
 <script src="app/index.js"></script>
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script>
+$(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+});
+</script>

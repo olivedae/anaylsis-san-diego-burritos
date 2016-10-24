@@ -10,7 +10,7 @@ module Decisions.Types
 , Decision (..)
 ) where
 
-type DataSet   = (Set, [Field], Field)
+type DataSet   = (Set, [Field], Field, Int, Int)
 type Set       = [Point]
 type Point     = [Integer]
 type Class     = Integer
