@@ -44,6 +44,21 @@ header = (concat . intersperse ",") fields
           , "predicted"
           , "correct" ]
 
+header'
+  :: String
+header' = (concat . intersperse ",") fields
+  where fields =
+          [ "predicted"
+          , "cost"
+          , "hunger"
+          , "tortilla"
+          , "meat"
+          , "fillings"
+          , "meat to fill"
+          , "uniformity"
+          , "wrap"
+          , "overall" ]
+
 format
   :: String
   -> [Class]
@@ -58,6 +73,14 @@ format alg actual predicted index = (concat . intersperse ",") formated
           , show (actual' == predicted') ]
         actual'    = actual !! index
         predicted' = predicted !! index
+
+format'
+  :: DecisionTree
+  -> Point
+  -> String
+format' model example = (concat . intersperse ",") formated
+  where formated   = map show (prediction example : example)
+        prediction = snd . fromJust . classify model
 
 main = do
   putStrLn "Testing model"
@@ -75,3 +98,18 @@ main = do
       csv'         = map (format "km" actual predictions') instances
 
   writeFile "data/compare.csv" $ unlines [header, unlines $ csv ++ csv']
+
+  let testing = [
+        [c, h, t, n, f, mf, u, w, o] |
+        c <- [1..3],
+        h <- [1..3],
+        t <- [1..3],
+        n <- [1..3],
+        f <- [1..3],
+        mf <- [1..3],
+        u <- [1..3],
+        w <- [1..3],
+        o <- [1..3] ]
+      boundary = map (format' id3model) testing
+
+  writeFile "data/boundary.csv" $ unlines [header', unlines boundary]

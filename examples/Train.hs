@@ -42,11 +42,12 @@ toHtml
   :: [(AttributeLabel, ClassLabels)]
   -> DecisionTree
   -> String
-toHtml labels (Leaf (a, c)) = "<div class='leaf'><div class='spine'></div><div class='tick l" ++ (show c) ++ "' data-toggle='tooltip' title='" ++ label ++ "'></div></div>"
+toHtml labels (Leaf (a, c)) = "<leaf class='" ++ (show c) ++ "' title='" ++ label ++ "'</leaf>"
   where (Just label) = Map.lookup c (snd $ labels !! fromInteger a)
-toHtml labels (Node attribute decisions) = "<div class='node'><div class='spine'></div><div class='tick n" ++ (show attribute) ++ "' data-toggle='tooltip' title='" ++ (fst $ labels !! fromInteger attribute) ++ "'></div><div class='branch'></div><div class='decisions'>" ++ display decisions ++ "</div></div>"
-  where display (d:ds) = "<div class='decision'><div class='spine'></div><div class='tick d" ++ show (token d) ++ "' data-toggle='tooltip' title='" ++ label (token d) ++ "'></div>" ++ toHtml labels (tree d) ++ "</div>" ++ display ds
+toHtml labels (Node attribute decisions) = "<node attribute='" ++ (show attribute) ++ "' title='" ++ title ++ "'>" ++ display decisions  ++ "</node>"
+  where title = fst $ labels !! fromInteger attribute
         display []     = ""
+        display (d:ds) = "<decision class='" ++ show (token d) ++ "' title='" ++ label (token d) ++ "'>" ++ toHtml labels (tree d) ++ "</decision>" ++ display ds
         label c = fromJust $ Map.lookup c (snd $ labels !! fromInteger attribute)
 
 modelLabels
@@ -74,9 +75,9 @@ main = do
 
   -- Create a trained model
   let id3model = id3 (dataset, fields, target, 0, 4)
-  kmmodel <- km dataset 0.0001 5
+  kmmodel <- km dataset 0.0001 7
 
   -- and save
   writeFile "data/burrito.id3.txt" (show id3model)
   writeFile "data/burrito.km.txt" (show kmmodel)
-  writeFile "data/tree.html" $ toHtml modelLabels id3model
+  writeFile "app/tree.html" $ toHtml modelLabels id3model

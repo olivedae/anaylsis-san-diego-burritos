@@ -22,7 +22,24 @@
 
 .key {
   padding-left: 15px;
-  padding-top: -25px;
+  margin-top: 0;
+}
+
+decisions {
+  display: block;
+}
+
+decisions .tick[class*="n"] {
+  width: 7px;
+  height: 7px;
+}
+
+decisions .tick[class*="l"] {
+  height: 10px;
+}
+
+decisions .tick[class*="d"] {
+  border-radius: 50%;
 }
 
 .node,
