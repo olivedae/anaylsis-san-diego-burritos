@@ -2,15 +2,23 @@
 
 import Decisions.Prepare (allFeatures, flattenAll, Burrito)
 import Decisions
+import qualified Decisions.KM as KM (classify)
 import System.IO
 import Data.Maybe (fromJust)
 import Control.Applicative
 import Data.List (concat, intersperse)
 
-openModel
+openID3Model
   :: FilePath
   -> IO DecisionTree
-openModel file =
+openID3Model file =
+  openFile file ReadMode >>= fmap read . hGetContents
+
+openKMModel
+  :: (Read a, Ord a, Floating a)
+  => FilePath
+  -> IO [[a]]
+openKMModel file =
   openFile file ReadMode >>= fmap read . hGetContents
 
 openBurritos
@@ -37,13 +45,14 @@ header = (concat . intersperse ",") fields
           , "correct" ]
 
 format
-  :: [Class]
+  :: String
+  -> [Class]
   -> [Class]
   -> Int
   -> String
-format actual predicted index = (concat . intersperse ",") formated
+format alg actual predicted index = (concat . intersperse ",") formated
   where formated =
-          [ "id3"
+          [ alg
           , show actual'
           , show predicted'
           , show (actual' == predicted') ]
@@ -53,12 +62,16 @@ format actual predicted index = (concat . intersperse ",") formated
 main = do
   putStrLn "Testing model"
 
-  model <- openModel "data/burrito.model.txt"
+  id3model <- openID3Model "data/burrito.id3.txt"
+  kmmodel <- openKMModel "data/burrito.km.txt"
   burrito <- map (fromJust) . flattenAll allFeatures <$> openBurritos "data/burrito.testing.txt"
 
   let actual      = map (flip get overall) burrito
-      predictions = map (snd . fromJust . classify model) burrito
+      predictions = map (snd . fromJust . classify id3model) burrito
       instances   = [0 .. (length predictions) - 1]
-      csv         = map (format actual predictions) instances
+      csv         = map (format "id3" actual predictions) instances
 
-  writeFile "data/compare.csv" $ unlines [header, unlines csv]
+  let predictions' = map ((!! fromInteger overall) . KM.classify kmmodel) burrito
+      csv'         = map (format "km" actual predictions') instances
+
+  writeFile "data/compare.csv" $ unlines [header, unlines $ csv ++ csv']

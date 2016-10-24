@@ -1,3 +1,5 @@
+{-# LANGUAGE RankNTypes #-}
+
 module Decisions.Types
 ( DataSet
 , Set
@@ -6,6 +8,7 @@ module Decisions.Types
 , Attribute
 , Pair
 , Field
+, Cluster
 , DecisionTree (..)
 , Decision (..)
 ) where
@@ -17,6 +20,7 @@ type Class     = Integer
 type Attribute = Integer
 type Pair      = (Attribute, Class)
 type Field     = (Attribute, [Class])
+type Cluster   = forall a . (Ord a, Floating a) => [a]
 
 data DecisionTree =
     Node Attribute [Decision]

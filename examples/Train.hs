@@ -6,6 +6,7 @@ import Control.Exception
 import Data.Maybe
 import Decisions
 import Decisions.ID3
+import Decisions.KM
 import Data.Map as Map
   ( Map
   , fromList
@@ -72,8 +73,10 @@ main = do
   let dataset = fromJust <$> flattenAll allFeatures burrito
 
   -- Create a trained model
-  let model = id3 (dataset, fields, target, 0, 4)
+  let id3model = id3 (dataset, fields, target, 0, 4)
+  kmmodel <- km dataset 0.0001 5
 
   -- and save
-  writeFile "data/burrito.model.txt" (show model)
-  writeFile "data/tree.html" $ toHtml modelLabels model
+  writeFile "data/burrito.id3.txt" (show id3model)
+  writeFile "data/burrito.km.txt" (show kmmodel)
+  writeFile "data/tree.html" $ toHtml modelLabels id3model
