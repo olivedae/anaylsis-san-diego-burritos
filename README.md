@@ -103,7 +103,7 @@ sns.plt.show()
 ```
 
 
-![png](output_4_0.png)
+![png](data/images/output_4_0.png)
 
 
 The plot below gives a visual of the models' results. Generally KM outpeforms the ID3 algorithm when it comes to testing. In some cases the KM model can correctly predict each example for some class i.e. where overall score is low. One interesting note is both algorithms have similar incorrect and correct predictions for burritos that are classifed as average.
@@ -123,7 +123,7 @@ sns.plt.show()
 ```
 
 
-![png](output_6_0.png)
+![png](data/images/output_6_0.png)
 
 
 The plot below gives us a better idea as to what each model predicted versus the actual category of the burrito. It becomes more evident now as to how similar the predictions are for both models as opposed to the previous plot which weigh higher the differnces in those predicted correct and incorrect.
@@ -143,7 +143,7 @@ sns.plt.show()
 ```
 
 
-![png](output_8_0.png)
+![png](data/images/output_8_0.png)
 
 
 ### Closing thoughts
