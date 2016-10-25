@@ -1,7 +1,7 @@
 
 # Assignment 3: ID3 Classifier
 
-**Author** Richard Protasov, **Date** 22 October 2016
+**Author** Richard Protasov
 
 ### Installing, building, and so on
 
