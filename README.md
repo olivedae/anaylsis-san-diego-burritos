@@ -1,7 +1,14 @@
 
-# Assignment 3: ID3 Classifier
+# Burritoooz: The Investigation 🌯
 
 **Author** Richard Protasov
+
+### Overview
+
+> And the burrito is the hallmark of delicous taco shop food: tasty, cheap, and filling [[1]](https://srcole.github.io/100burritos/)
+
+However, the characteristics of a good burrito is open to discussion [[2]](http://www.seriouseats.com/talk/2010/08/what-makes-a-burrito-the-best-burrito.html). More so, it's no secret that a person sits down to enjoy their meal, but, they take a bite of something less than ideal [[3]](https://www.google.com/search?q=disappointing+burritos) [[4]](https://waronpants.net/article/chipolte-burritos-disappoint-me/). We may not be able to directly affect the burrito market (although this scenario may be a realistic outcome) , yet, can we avoid parts of it? This report makes an attempt at doing just so. The findings of the report are based on several classifiers trained on a [San Diego survey](https://www.kaggle.com/srcole/burritos-in-san-diego) from reviewers on over 200 burritos. From these trained models we aim to gather relative insight as to what makes a burrito, a (wonderful, dazzling, and delicious) burrito!
+
 
 ### Installing, building, and so on
 
@@ -26,13 +33,6 @@ After, type
 ```
 
 which will start a local web server and open a browser tab pointing to its address (in case this doesn't work the URL is [http://localhost:8000](http://localhost:8000) and can be changed if needed to). Again, a visual is included without having to do this.
-
-
-### Overview
-
-> And the burrito is the hallmark of delicous taco shop food: tasty, cheap, and filling [[1]](https://srcole.github.io/100burritos/)
-
-However, the characteristics of a good burrito is open to discussion [[2]](http://www.seriouseats.com/talk/2010/08/what-makes-a-burrito-the-best-burrito.html). More so, it's no secret that a person sits down to enjoy their meal, but, they take a bite of something less than ideal [[3]](https://www.google.com/search?q=disappointing+burritos) [[4]](https://waronpants.net/article/chipolte-burritos-disappoint-me/). We may not be able to directly affect the burrito market (although this scenario may be a realistic outcome) , yet, can we avoid parts of it? This report makes an attempt at doing just so. The findings of the report are based on several classifiers trained on a [San Diego survey](https://www.kaggle.com/srcole/burritos-in-san-diego) from reviewers on over 200 burritos. From these trained models we aim to gather relative insight as to what makes a burrito, a (wonderful, dazzling, and delicious) burrito!
 
 
 ### About the dataset
