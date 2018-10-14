@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<style>
+.y.axis text, .x.axis text, .category.axis text, .title text {
+  font-family: sans-serif;
+  fill: #515151;
+}
+
+.title text {
+  font-weight: 100;
+}
+</style>
+
+<svg class="chart"></svg>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script>
+
+  var categories = {
+    protein: {
+      id: "protein",
+      name: "Proteins",
+      items: [
+        "Beef",
+        "Pork",
+        "Chicken",
+        "Shrimp",
+        "Fish",
+        "Ham",
+        "Lobster",
+        "Egg",
+        "Bacon"
+      ],
+      shift: 1
+    },
+    veggies: {
+      id: "veggies",
+      name: "Veggies",
+      items: [
+        "Tomato",
+        "Bell_pepper",
+        "Carrots",
+        "Cabbage",
+        "Onion",
+        "Nopal",
+        "Mushroom",
+        "Avocado",
+        "Corn",
+        "Zucchini"
+      ],
+      shift: 2
+    },
+    toppings: {
+      id: "toppings",
+      name: "Toppings",
+      items: [
+        "Pico",
+        "Cheese",
+        "Fries",
+        "Sour_cream",
+        "Sauce",
+        "Salsa",
+        "Cilantro",
+        "Pineapple",
+        "Taquito"
+      ],
+      shift: 3
+    },
+    styles: {
+      id: "styles",
+      name: "Styles",
+      items: [
+        "Chile_relleno"
+      ],
+      shift: 4
+    }
+  };
+
+  categories.protein.base  = 0;
+  categories.veggies.base  = categories.protein.items.length + 1;
+  categories.toppings.base = categories.veggies.base + categories.veggies.items.length + 1;
+  categories.styles.base   = categories.toppings.base + categories.toppings.items.length + 1;
+
+  var allItems = [];
+  Object.keys(categories).forEach(function(categoryId) {
+    var category = categories[categoryId];
+    var categoryItems = category.items.slice();
+
+    categoryItems.forEach(function(item) {
+      allItems.push({
+        Item: item
+      });
+    });
+  });
+
+  categorize(allItems);
+
+  var maxItems = 0;
+
+  Object.keys(categories).forEach(function(category) {
+    maxItems += categories[category].items.length + 1;
+  });
+
+  var margin = {
+    top: 80,
+    right: 100,
+    bottom: 80,
+    left: 100
+  };
+
+  var outerWidth  = 960;
+  var outerHeight;
+
+  var width  = outerWidth - margin.left - margin.right;
+  var height;
+
+  var xDomain = [];
+  for (var i = 0; i < maxItems; i++) {
+    xDomain.push(i);
+  }
+
+  var loadings         = [];
+  var numberOfLoadings = 29;
+
+  for (var i = 1; i <= numberOfLoadings; i++) {
+    loadings.push("PC" + i);
+  }
+
+  height      = 650;
+  width       = height;
+  outerWidth  = width + margin.left + margin.right;
+  outerHeight = height + margin.top + margin.bottom;
+
+  var categoryBoxHeight  = 15;
+  var categoryBoxWidth   = height;
+  var categoryBoxPadding = 5;
+
+  var xScale = d3.scaleBand()
+      .rangeRound([0, categoryBoxWidth])
+      .domain(xDomain)
+      .padding(0.1);
+
+  var yScale = d3.scaleBand()
+      .rangeRound([0, height])
+      .domain(loadings)
+      .padding(0.1);
+
+  var zScale = d3.scaleSequential(d3.interpolateBlues);
+
+  var chart = d3.select(".chart")
+      .attr("width", outerWidth)
+      .attr("height", outerHeight)
+    .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  chart.append("g")
+      .attr("class", "title")
+    .append("text")
+      .attr("x", width / 2)
+      .attr("y", 0 - (margin.top / 2))
+      .attr("text-anchor", "middle")
+      .style("font-size", "17px")
+      .text("Heat Map of Principal Components on Burrito Dataset");
+
+  var xAxis = chart.append("g")
+      .attr("class", "x axis");
+
+  var yAxis = chart.append("g")
+      .attr("class", "y axis");
+
+  var categoryAxis = chart.append("g")
+      .attr("class", "category axis");
+
+  d3.csv("../data/eigenburritos.csv", function(data) {
+    draw(categorize(data));
+  });
+
+  function categorize(items, debug = false) {
+    items.forEach(function(item) {
+      var itemIndex;
+      var itemCategory;
+
+      Object.keys(categories).forEach(function(categoryId) {
+        var category = categories[categoryId];
+        var index    = category.items.indexOf(item.Item);
+
+        if (index > -1) {
+          itemIndex    = index + category.base;
+          itemCategory = category.id;
+
+          if (debug) {
+            console.log(category.id, index, category.base, item.Item);
+          }
+        }
+      });
+
+      item.Index    = itemIndex;
+      item.Category = itemCategory;
+    });
+
+    return items;
+  }
+
+  function draw(items) {
+
+    var loadingItems = items.sort(function(a, b) {
+      return d3.ascending(Math.abs(a.Coef), Math.abs(b.Coef));
+    });
+
+    zScale.domain([Math.abs(loadingItems[0].Coef), Math.abs(loadingItems[loadingItems.length - 1].Coef)]);
+
+    chart.append("g")
+        .attr("class", "coefs")
+      .selectAll("rect")
+        .data(items, function(d) { return d.Item; })
+      .enter().append("rect")
+        .attr("transform", getLocation)
+        .attr("width", xScale.bandwidth())
+        .attr("height", yScale.bandwidth())
+        .attr("fill", getFill)
+        .append("title")
+        .text(function(d) {
+          return d.Item + " " + d.Coef;
+        });
+
+    yAxis.selectAll("text")
+        .data(loadings)
+      .enter().append("text")
+        .style("font-size", "10px")
+        .attr("x", 0)
+        .attr("y", function(d) { return yScale(d) + yScale.bandwidth() / 2 + 4; })
+        .attr("text-anchor", "end")
+        .text(function(d) { return d; });
+
+    xAxis.selectAll("text")
+        .data(allItems)
+      .enter().append("text")
+        .style("font-size", "10px")
+        .attr("text-anchor", "start")
+        .attr("transform", function(d) {
+          return "translate(" + (xScale(d.Index) + xScale.bandwidth() / 2 - 4) + "," + (height + 5) + ") rotate(45)";
+        })
+        .text(function(d) { return d.Item.replace("_", " "); });
+
+    categoryAxis.selectAll("text")
+        .data(Object.keys(categories))
+      .enter().append("text")
+        .style("font-size", "10px")
+        .attr("x", getCategoryX)
+        .attr("y", 0)
+        .attr("text-anchor", "middle")
+        .text(function(d) { return categories[d].name; });
+  }
+
+  function getCategoryX(category) {
+    var numItems = categories[category].items.length;
+    var offset   = (categories[category].base + categories[category].shift) * xScale.bandwidth();
+
+    return offset + (numItems * xScale.bandwidth() / 2);
+  }
+
+  function getLocation(item) {
+    var loadingBase  = yScale(item.Loading);
+    var itemBase     = xScale(item.Index);
+
+    return "translate(" + itemBase + "," + loadingBase + ")";
+  }
+
+  function getFill(item) {
+    return zScale(Math.abs(item.Coef));
+  }
+
+</script>

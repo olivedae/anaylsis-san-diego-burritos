@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<style>
+</style>
+
+<svg class="chart"></svg>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script>
+
+  // https://medium.com/ninjaconcept/interactive-dynamic-force-directed-graphs-with-d3-da720c6d7811
+
+  var width  = window.innerWidth;
+  var height = window.innerHeight > 750 ? window.innerHeight : 750;
+
+  var ingredients;
+  var burritos;
+
+  var nodes = [];
+  var links = [];
+
+  var nodeElements;
+  var linkElements;
+
+  var sizeScale = d3.scaleLinear()
+      .range([5, 20]);
+
+  var chart = d3.select(".chart")
+      .attr("width", width)
+      .attr("height", height);
+
+  d3.csv("../data/ingredients.csv", function(data) {
+    ingredients = data.columns.filter(function(ingredient) {
+      return ingredient !== "Id" && ingredient != "Count";
+    }).map(function(ingredient) {
+      return {
+        id    : ingredient,
+        label : ingredient
+      };
+    });
+
+    delete data.columns;
+
+    burritos              = data;
+    var remainingBurritos = data.slice();
+
+    var minWeight = 0;
+    var maxWeight = 0;
+
+    nodes = burritos.map(function(burrito) {
+      if (burrito.Count > maxWeight) {
+        maxWeight = burrito.Count;
+      }
+
+      return {
+        id     : burrito.Key,
+        name   : burrito.Name,
+        weight : burrito.Count
+      };
+    });
+
+    sizeScale.domain([minWeight, maxWeight]);
+
+    for (var i = 0; i < burritos.length; i++) {
+      var burrito = burritos[i];
+
+      remainingBurritos.shift();
+
+      var relationships = remainingBurritos.filter(function(candidateBurrito) {
+        return hasRelationship(burrito, candidateBurrito);
+      }).map(function(relatedBurrito) {
+        return {
+          target   : burrito.Key,
+          source   : relatedBurrito.Key,
+          strength : getRelationshipStrength(burrito, relatedBurrito)
+        };
+      });
+
+      links = links.concat(relationships);
+    }
+
+    var linkForce = d3
+      .forceLink()
+      .id(function(link) { return link.id; })
+      .strength(function(link) { return link.strength; });
+
+    var simulation = d3.forceSimulation()
+      .force("link", linkForce)
+      .force("charge", d3.forceManyBody().strength(-450))
+      .force("center", d3.forceCenter(width / 2, height / 2));
+
+    linkElements = chart.append("g")
+      .selectAll("line")
+      .data(links)
+      .enter().append("line")
+          .attr("stroke-width", 0.5)
+          .attr("stroke", "#c6c6c6");
+
+    nodeElements = chart.append("g")
+      .selectAll("circle")
+      .data(nodes)
+      .enter().append("circle")
+          .attr("stroke", "#fff")
+          .attr("stroke-width", 1)
+          .attr("r", function(d) { return sizeScale(d.weight); })
+          .attr("fill", "#a0e06b")
+
+    nodeElements.append("title")
+      .text(function(node) { return node.name; });
+
+    simulation.nodes(nodes).on("tick", function() {
+      nodeElements
+          .attr("cx", function(node) { return node.x; })
+          .attr("cy", function(node) { return node.y; });
+      linkElements
+          .attr("x1", function(link) { return link.source.x; })
+          .attr("y1", function(link) { return link.source.y; })
+          .attr("x2", function(link) { return link.target.x; })
+          .attr("y2", function(link) { return link.target.y; });
+    });
+
+    simulation.force("link").links(links);
+
+    var dragDrop = d3.drag()
+      .on("start", function(node) {
+        node.fx = node.x;
+        node.fy = node.y;
+      })
+      .on("drag", function(node) {
+        simulation.alphaTarget(0.7).restart();
+        node.fx = d3.event.x;
+        node.fy = d3.event.y;
+      })
+      .on("end", function(node) {
+        if (!d3.event.active) {
+          simulation.alphaTarget(0);
+        }
+
+        node.fx = null;
+        node.fy = null;
+      });
+
+    nodeElements.call(dragDrop);
+
+    nodeElements.on("click", selectNode);
+  });
+
+  function hasRelationship(a, b) {
+    return getRelationshipStrength(a, b) > 0;
+  }
+
+  function getRelationshipStrength(a, b) {
+    var matches = ingredients.filter(function(ingredient) {
+      return a[ingredient.id] === "1" && b[ingredient.id] === "1";
+    });
+
+    var included = ingredients.filter(function(ingredient) {
+      return a[ingredient.id] === "1" || b[ingredient.id] === "1";
+    });
+
+    var numMatches     = matches.length;
+    var numIncluded    = included.length;
+    var numIngredients = ingredients.length;
+
+    var strength = numMatches / numIngredients;
+
+    return strength;
+  }
+
+  function selectNode(selectedNode) {
+    var neighbors = getNeighbors(selectedNode);
+
+    nodeElements
+        .attr("fill", function(node) { return getNodeColor(node, neighbors, selectedNode); });
+    linkElements
+        .attr("stroke", function(link) { return getLinkColor(selectedNode, link); })
+        .attr("stroke-width", function(link) { return getLinkStrokeWidth(selectedNode, link); });
+  }
+
+  function getNodeColor(node, neighbors = [], selected) {
+    if (node.id === selected.id) {
+      return "#96002b";
+    }
+
+    if (neighbors.indexOf(node.id) > -1) {
+      return "#e84775";
+    }
+
+    return "#a0e06b";
+  }
+
+  function getLinkColor(node, link) {
+    return isNeighborLink(node, link) ? "#3d3d3d" : "#c6c6c6";
+  }
+
+  function getLinkStrokeWidth(node, link) {
+    return isNeighborLink(node, link) ? 0.5 : 0.5;
+  }
+
+  function getNeighbors(node) {
+    return links.reduce(function(neighbors, link) {
+      if (link.target.id === node.id) {
+        neighbors.push(link.source.id);
+      }
+      else if (link.source.id === node.id) {
+        neighbors.push(link.target.id);
+      }
+
+      return neighbors;
+    }, [node.id]);
+  }
+
+  function isNeighborLink(node, link) {
+    return link.target.id === node.id || link.source.id === node.id;
+  }
+
+</script>
